@@ -78,5 +78,5 @@ struct Provincia: Codable, Hashable, Identifiable {
 
 struct Provincias: Codable, Hashable {
     let title: String
-    let provincias: [Provincia]
+    var provincias: [Provincia]
 }

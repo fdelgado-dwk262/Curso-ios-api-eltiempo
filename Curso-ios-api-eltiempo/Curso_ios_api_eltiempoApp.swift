@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import SwiftData
 
 @main
 struct Curso_ios_api_eltiempoApp: App {
@@ -13,5 +14,9 @@ struct Curso_ios_api_eltiempoApp: App {
         WindowGroup {
             ContentView()
         }
+        
+        // crea un contenedor del cual obtenemos un contexto
+        // para el uso del SwiftData
+        .modelContainer(for: [Persistencia.self, PersistenciaProvincias.self])
     }
 }

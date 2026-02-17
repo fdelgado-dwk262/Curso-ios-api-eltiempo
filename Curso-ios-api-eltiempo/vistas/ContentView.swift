@@ -6,9 +6,44 @@
 //
 
 import SwiftUI
+import SwiftData
+
+// para persistencia
+@Model
+class Persistencia {
+    var codProvincia : String
+    var codMunicipio : String
+    
+    init(codProvincia: String, codMunicipio: String) {
+        self.codProvincia = codProvincia
+        self.codMunicipio = codMunicipio
+    }
+}
+
+//@model
+//class PersistenciaMunicipios {
+// // TODO: el modelo de datos para la presistencia de los municipios
+//    
+//}
+
+@Model
+class PersistenciaProvincias {
+    var codProvincia: String
+    var nomProvincia: String
+    init(codProvincia: String, nomProvincia: String) {
+        self.codProvincia = codProvincia
+        self.nomProvincia = nomProvincia
+    }
+}
+
 
 struct ContentView: View {
-    // inicializado a nill para que no pete
+    
+    @Environment(\.modelContext) private var context
+    // @Query(sort: \PersistenciaProvincias.nomProvincia) private var persistenciProvincias: [PersistenciaProvincias]
+    
+    @Query private var persistenciProvincias: [PersistenciaProvincias]
+    
     @State private var provincias: Provincias? = nil
     @State private var municipios: Municipios? = nil
     @State private var pronosticoMunicipio: PronosticoMunicipio? = nil
@@ -54,10 +89,27 @@ struct ContentView: View {
         .navigationTitle("La API del tiempo")
 
         .task {
-            do {
-                self.provincias = try await obtenerProvincias()
-            } catch {
-                print("Error: \(error)")
+            if !persistenciProvincias.isEmpty {
+                print("Ya tenemos los datos en persistencia")
+                self.provincias = Provincias(title: "", provincias: [])
+                for persistenciProvincia in persistenciProvincias {
+                    let provincia = Provincia(CODPROV: persistenciProvincia.codProvincia, NOMBRE_PROVINCIA: persistenciProvincia.nomProvincia)
+                    self.provincias!.provincias.append(provincia)
+                }
+            } else {
+                print("No tenemos los datos en persistencia. Llamamos a internet")
+                do {
+                    self.provincias = try await obtenerProvincias()
+                    if let misProvincias = self.provincias?.provincias {
+                        for provincia in misProvincias {
+                            context.insert(PersistenciaProvincias(codProvincia: provincia.CODPROV, nomProvincia: provincia.NOMBRE_PROVINCIA))
+                        }
+                        print("Hemos guardado las provincias en persistencia")
+                    }
+                        
+                } catch {
+                    print("Error: \(error)")
+                }
             }
         }
 
@@ -206,6 +258,8 @@ struct VistaDetalleProvincia: View {
 
     func obtenerMunicipos(codprov: String) async throws -> Municipios {
 
+         
+        
         guard
             let url = URL(
                 string:
@@ -234,6 +288,10 @@ struct VistaDetalleProvincia: View {
 }
 
 struct VistaDetalleMunicipio: View {
+    // persistencia
+    @Environment(\.modelContext) private var context
+    @Query private var persitenciaProvMun: [Persistencia]
+    
     @State private var pronostico: PronosticoMunicipio?
     var municipio: Municipio
 
