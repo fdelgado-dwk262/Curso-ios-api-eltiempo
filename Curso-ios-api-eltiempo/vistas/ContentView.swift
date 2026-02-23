@@ -22,7 +22,7 @@ class Persistencia {
 
 //@model
 //class PersistenciaMunicipios {
-// // TODO: el modelo de datos para la presistencia de los municipios
+// // TODO: el modelo de datos para la presistencia de los municipios 
 //    
 //}
 
